@@ -1,7 +1,8 @@
+# train.py
 from transformers import AutoImageProcessor, DeformableDetrForObjectDetection, TrainingArguments, Trainer
-from datasets import load_dataset
 import torch
 from PIL import Image
+from flir_dataset import main as load_flir_dataset  # Import the main function from flir_dataset.py
 
 def collate_fn(batch):
     return {
@@ -10,13 +11,13 @@ def collate_fn(batch):
     }
 
 def main():
-    # Load your dataset with trust_remote_code=True
-    dataset = load_dataset('flir_dataset.py', trust_remote_code=True)
+    # Load your dataset
+    dataset = load_flir_dataset()  # This now calls the main() function from flir_dataset.py
 
     # Load processor and model
     processor = AutoImageProcessor.from_pretrained("SenseTime/deformable-detr")
     model = DeformableDetrForObjectDetection.from_pretrained("SenseTime/deformable-detr")
-
+    
     # Preprocess the dataset
     def preprocess_data(examples):
         images = [Image.open(path).convert("RGB") for path in examples['image_path']]
