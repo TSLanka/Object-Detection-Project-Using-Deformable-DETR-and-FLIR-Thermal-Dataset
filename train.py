@@ -11,8 +11,8 @@ def collate_fn(batch):
     }
 
 def main():
-    # Load your dataset
-    dataset = load_dataset('flir_dataset.py')
+    # Load your dataset with trust_remote_code=True
+    dataset = load_dataset('flir_dataset.py', trust_remote_code=True)
 
     # Load processor and model
     processor = AutoImageProcessor.from_pretrained("SenseTime/deformable-detr")

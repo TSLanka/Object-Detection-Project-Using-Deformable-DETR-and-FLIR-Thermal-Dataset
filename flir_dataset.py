@@ -4,8 +4,21 @@ import os
 from datasets import Dataset
 
 def load_flir_dataset(images_dir, annotations_file):
-    with open(annotations_file, 'r') as f:
-        annotations = json.load(f)
+    """
+    Loads the FLIR dataset in COCO format.
+
+    Args:
+        images_dir (str): Directory containing images.
+        annotations_file (str): Path to the COCO-formatted JSON file with annotations.
+
+    Returns:
+        Dataset: A HuggingFace dataset containing image paths and annotations.
+    """
+    try:
+        with open(annotations_file, 'r') as f:
+            annotations = json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Annotation file {annotations_file} not found.")
     
     data = {
         'image_path': [os.path.join(images_dir, img['file_name']) for img in annotations['images']],
@@ -28,14 +41,18 @@ def main():
     base_dir = 'Data'
     train_dataset = load_flir_dataset(
         os.path.join(base_dir, 'images_thermal_train'),
-        os.path.join(base_dir, 'thermal_annotations_train.json')  # You'll need to create this
+        os.path.join(base_dir, 'images_thermal_train', 'coco.json')
     )
     val_dataset = load_flir_dataset(
         os.path.join(base_dir, 'images_thermal_val'),
-        os.path.join(base_dir, 'thermal_annotations_val.json')  # You'll need to create this
+        os.path.join(base_dir, 'images_thermal_val', 'coco.json')
     )
     
     return {
         'train': train_dataset,
         'validation': val_dataset
     }
+
+if __name__ == "__main__":
+    datasets = main()
+    print("Datasets loaded successfully.")

@@ -2,10 +2,20 @@
 from transformers import AutoImageProcessor, DeformableDetrForObjectDetection
 import torch
 from PIL import Image
+import argparse
 
 def run_inference(image_path):
+    """
+    Runs inference on the given image.
+
+    Args:
+        image_path (str): Path to the image file.
+    """
     # Load the image
-    image = Image.open(image_path).convert("RGB")
+    try:
+        image = Image.open(image_path).convert("RGB")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Image file {image_path} not found.")
 
     # Load the processor and model
     processor = AutoImageProcessor.from_pretrained("./deformable_detr_flir")
@@ -30,4 +40,7 @@ def run_inference(image_path):
         )
 
 if __name__ == "__main__":
-    run_inference("Data/images_thermal_val/your_test_image.jpg")  # Replace with an actual image path
+    parser = argparse.ArgumentParser(description="Run inference on a thermal image.")
+    parser.add_argument("image_path", type=str, help="Path to the image file.")
+    args = parser.parse_args()
+    run_inference(args.image_path)
