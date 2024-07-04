@@ -1,4 +1,3 @@
-# train.py
 from transformers import AutoImageProcessor, DeformableDetrForObjectDetection, TrainingArguments, Trainer
 from datasets import load_dataset
 import torch

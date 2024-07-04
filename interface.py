@@ -1,12 +1,24 @@
-# inference.py
 from transformers import AutoImageProcessor, DeformableDetrForObjectDetection
 import torch
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from tkinter import Tk, filedialog
 
-def load_image(image_path):
-    image = Image.open(image_path).convert("RGB")
+def load_image(image_path, image_type):
+    """
+    Load an image based on the specified type (RGB or thermal).
+    
+    Args:
+        image_path (str): Path to the image.
+        image_type (str): Type of the image, either 'rgb' or 'thermal'.
+        
+    Returns:
+        Image: Loaded image.
+    """
+    image = Image.open(image_path)
+    if image_type == 'rgb':
+        image = image.convert("RGB")
     return image
 
 def plot_results(image, boxes, labels):
@@ -19,14 +31,30 @@ def plot_results(image, boxes, labels):
         ax.add_patch(rect)
     plt.show()
 
+def select_image():
+    # Initialize tkinter
+    root = Tk()
+    root.withdraw()  # Hide the main window
+    # Open file dialog and return the selected file path
+    file_path = filedialog.askopenfilename(title="Select an image", filetypes=[("Image files", "*.jpg *.jpeg *.png")])
+    return file_path
+
 def main():
+    # Select image using file dialog
+    image_path = select_image()
+    if not image_path:
+        print("No image selected.")
+        return
+
+    # Determine the image type (RGB or thermal)
+    image_type = 'rgb' if 'rgb' in image_path.lower() else 'thermal'
+
     # Load processor and model
     processor = AutoImageProcessor.from_pretrained("./deformable_detr_flir")
     model = DeformableDetrForObjectDetection.from_pretrained("./deformable_detr_flir")
 
     # Load and preprocess image
-    image_path = "path_to_your_image.jpg"
-    image = load_image(image_path)
+    image = load_image(image_path, image_type)
     inputs = processor(images=image, return_tensors="pt")
 
     # Perform inference
