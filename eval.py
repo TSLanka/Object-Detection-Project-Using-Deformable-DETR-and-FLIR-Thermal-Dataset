@@ -1,4 +1,4 @@
-# train.py
+# eval.py
 from transformers import AutoImageProcessor, DeformableDetrForObjectDetection, TrainingArguments, Trainer
 from datasets import load_dataset
 import torch
@@ -15,8 +15,8 @@ def main():
     dataset = load_dataset('flir_dataset.py', trust_remote_code=True)
 
     # Load processor and model
-    processor = AutoImageProcessor.from_pretrained("SenseTime/deformable-detr")
-    model = DeformableDetrForObjectDetection.from_pretrained("SenseTime/deformable-detr")
+    processor = AutoImageProcessor.from_pretrained("./deformable_detr_flir")
+    model = DeformableDetrForObjectDetection.from_pretrained("./deformable_detr_flir")
 
     # Preprocess the dataset
     def preprocess_data(examples):
@@ -34,19 +34,13 @@ def main():
         inputs['labels'] = targets
         return inputs
 
-    train_dataset = dataset['train'].map(preprocess_data, batched=True, remove_columns=dataset['train'].column_names)
     val_dataset = dataset['validation'].map(preprocess_data, batched=True, remove_columns=dataset['validation'].column_names)
 
-    # Define training arguments
+    # Define evaluation arguments
     training_args = TrainingArguments(
         output_dir="./deformable_detr_flir",
-        per_device_train_batch_size=4,
-        num_train_epochs=3,
-        save_steps=1000,
-        eval_steps=1000,
+        per_device_eval_batch_size=4,
         logging_steps=100,
-        learning_rate=1e-5,
-        weight_decay=1e-4,
     )
 
     # Create Trainer instance
@@ -54,16 +48,12 @@ def main():
         model=model,
         args=training_args,
         data_collator=collate_fn,
-        train_dataset=train_dataset,
         eval_dataset=val_dataset,
     )
 
-    # Start training
-    trainer.train()
-
-    # Save model and processor
-    model.save_pretrained("./deformable_detr_flir")
-    processor.save_pretrained("./deformable_detr_flir")
+    # Start evaluation
+    results = trainer.evaluate()
+    print(results)
 
 if __name__ == "__main__":
     main()
