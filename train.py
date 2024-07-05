@@ -1,4 +1,3 @@
-# train.py
 from transformers import AutoImageProcessor, DeformableDetrForObjectDetection, TrainingArguments, Trainer
 import torch
 from PIL import Image
@@ -20,6 +19,11 @@ def main():
     
     # Preprocess the dataset
     def preprocess_data(examples):
+        # Debugging: Print out the paths being used
+        print("Processing the following image paths:")
+        for path in examples['image_path']:
+            print(path)
+        
         images = [Image.open(path).convert("RGB") for path in examples['image_path']]
         annotations = examples['annotations']
         
@@ -34,9 +38,9 @@ def main():
         inputs['labels'] = targets
         return inputs
 
-    train_dataset = dataset['train'].map(preprocess_data, batched=True, remove_columns=dataset['train'].column_names)
-    val_dataset = dataset['validation'].map(preprocess_data, batched=True, remove_columns=dataset['validation'].column_names)
-
+    train_dataset = dataset['train'].map(preprocess_data, batched=True)
+    val_dataset = dataset['validation'].map(preprocess_data, batched=True)
+    
     # Define training arguments
     training_args = TrainingArguments(
         output_dir="./deformable_detr_flir",
